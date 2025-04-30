@@ -1,0 +1,8 @@
+{
+    "admin": {
+        "password": "admin123",
+        "balance": 10000,
+        "transactions": [],
+        "is_admin": true
+    }
+}
