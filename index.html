@@ -4,113 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banking System</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        button { padding: 10px; margin: 10px; cursor: pointer; }
+        input { padding: 10px; margin: 5px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Banking System</h1>
-    <div>
-        <h2>Login</h2>
-        <form id="loginForm">
-            <input type="text" id="loginUsername" placeholder="Username" required><br>
-            <input type="password" id="loginPassword" placeholder="Password" required><br>
-            <button type="submit">Login</button>
-        </form>
-    </div>
-    <div>
-        <h2>Register</h2>
-        <form id="registerForm">
-            <input type="text" id="registerUsername" placeholder="Username" required><br>
-            <input type="password" id="registerPassword" placeholder="Password" required><br>
-            <button type="submit">Register</button>
-        </form>
-    </div>
 
-    <div id="balanceSection" style="display:none;">
-        <h2>Your Balance: <span id="userBalance">0</span></h2>
-        <h3>Transfer Money</h3>
-        <form id="transferForm">
-            <input type="text" id="receiverUsername" placeholder="Receiver's Username" required><br>
-            <input type="number" id="transferAmount" placeholder="Amount" required><br>
-            <button type="submit">Transfer</button>
-        </form>
-    </div>
+<h1>Banking System</h1>
 
-    <script>
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const transferForm = document.getElementById('transferForm');
-        const balanceSection = document.getElementById('balanceSection');
-        const userBalance = document.getElementById('userBalance');
-        let currentUser = null;
+<div id="login-register">
+    <h2>Login or Register</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+</div>
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
+<div id="bank-dashboard" style="display:none;">
+    <h2>Welcome, <span id="current-user"></span>!</h2>
+    <h3>Balance: $<span id="balance">0</span></h3>
+    <input type="text" id="receiver" placeholder="Receiver Username">
+    <input type="number" id="amount" placeholder="Amount">
+    <button onclick="transferMoney()">Transfer Money</button>
+    <button onclick="logout()">Logout</button>
+</div>
 
-            const res = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
+<script>
+    let currentUser = null;
 
-            const data = await res.json();
-            if (res.ok) {
-                alert('Login successful');
-                currentUser = username;
-                balanceSection.style.display = 'block';
-            } else {
-                alert(data.error);
-            }
+    async function register() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const res = await fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
         });
+        const data = await res.json();
+        alert(data.message || data.error);
+    }
 
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('registerUsername').value;
-            const password = document.getElementById('registerPassword').value;
+    async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            const res = await fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert('Registration successful');
-            } else {
-                alert(data.error);
-            }
+        const res = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
         });
+        const data = await res.json();
+        
+        if (res.ok) {
+            currentUser = username;
+            document.getElementById("current-user").textContent = currentUser;
+            showBankDashboard();
+        } else {
+            alert(data.error);
+        }
+    }
 
-        transferForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const receiver = document.getElementById('receiverUsername').value;
-            const amount = document.getElementById('transferAmount').value;
+    async function transferMoney() {
+        const receiver = document.getElementById("receiver").value;
+        const amount = document.getElementById("amount").value;
 
-            const res = await fetch('/transfer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sender: currentUser,
-                    receiver,
-                    amount
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert('Transfer successful');
-                userBalance.textContent = data.sender_balance;
-            } else {
-                alert(data.error);
-            }
+        const res = await fetch('/transfer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sender: currentUser, receiver, amount })
         });
-    </script>
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(data.message);
+            updateBalance();
+        } else {
+            alert(data.error);
+        }
+    }
+
+    async function updateBalance() {
+        const res = await fetch(`/balance?username=${currentUser}`);
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById("balance").textContent = data.balance;
+        } else {
+            alert(data.error);
+        }
+    }
+
+    function showBankDashboard() {
+        document.getElementById("login-register").style.display = "none";
+        document.getElementById("bank-dashboard").style.display = "block";
+        updateBalance();
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById("login-register").style.display = "block";
+        document.getElementById("bank-dashboard").style.display = "none";
+    }
+</script>
+
 </body>
 </html>
+
