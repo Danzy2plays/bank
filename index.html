@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking System</title>
+</head>
+<body>
+    <h1>Welcome to the Banking System</h1>
+    <div>
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Username" required><br>
+            <input type="password" id="loginPassword" placeholder="Password" required><br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    <div>
+        <h2>Register</h2>
+        <form id="registerForm">
+            <input type="text" id="registerUsername" placeholder="Username" required><br>
+            <input type="password" id="registerPassword" placeholder="Password" required><br>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <div id="balanceSection" style="display:none;">
+        <h2>Your Balance: <span id="userBalance">0</span></h2>
+        <h3>Transfer Money</h3>
+        <form id="transferForm">
+            <input type="text" id="receiverUsername" placeholder="Receiver's Username" required><br>
+            <input type="number" id="transferAmount" placeholder="Amount" required><br>
+            <button type="submit">Transfer</button>
+        </form>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const transferForm = document.getElementById('transferForm');
+        const balanceSection = document.getElementById('balanceSection');
+        const userBalance = document.getElementById('userBalance');
+        let currentUser = null;
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Login successful');
+                currentUser = username;
+                balanceSection.style.display = 'block';
+            } else {
+                alert(data.error);
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Registration successful');
+            } else {
+                alert(data.error);
+            }
+        });
+
+        transferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const receiver = document.getElementById('receiverUsername').value;
+            const amount = document.getElementById('transferAmount').value;
+
+            const res = await fetch('/transfer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sender: currentUser,
+                    receiver,
+                    amount
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Transfer successful');
+                userBalance.textContent = data.sender_balance;
+            } else {
+                alert(data.error);
+            }
+        });
+    </script>
+</body>
+</html>
