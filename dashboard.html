@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Dashboard</title>
+</head>
+<body>
+    <h2>Welcome, {{ user['username'] }}!</h2>
+    <p>Balance: {{ user['balance'] }}</p>
+    <h3>Transactions</h3>
+    <ul>
+        {% for transaction in user['transactions'] %}
+            <li>{{ transaction }}</li>
+        {% endfor %}
+    </ul>
+    <form action="/transfer" method="POST" id="transfer-form">
+        <input type="text" name="receiver" placeholder="Receiver Username" required>
+        <input type="number" name="amount" placeholder="Amount" required>
+        <button type="submit">Transfer</button>
+    </form>
+</body>
+</html>
