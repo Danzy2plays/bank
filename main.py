@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 import json
 import os
 
 app = Flask(__name__)
 
-# File to store user data
 USER_DATA_FILE = "users.json"
 
-# Load users from file or initialize if not exists
 if os.path.exists(USER_DATA_FILE):
     with open(USER_DATA_FILE, "r") as f:
         users = json.load(f)
 else:
     users = {}
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/register', methods=['POST'])
 def register():
