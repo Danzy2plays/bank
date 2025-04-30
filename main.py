@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 USER_DATA_FILE = "users.json"
 
+# Load user data from the JSON file
 if os.path.exists(USER_DATA_FILE):
     with open(USER_DATA_FILE, "r") as f:
         users = json.load(f)
@@ -66,3 +67,4 @@ def save_users():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
